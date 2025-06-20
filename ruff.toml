@@ -1,0 +1,3 @@
+[lint]
+# pyflakes, pycodestyle, isort
+select = ["F", "E", "W", "I001", "B"]
