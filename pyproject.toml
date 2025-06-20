@@ -12,3 +12,6 @@ dependencies = [
 dev = [
     "pre-commit>=4.2.0",
 ]
+
+[tool.mypy]
+ignore_missing_imports = true
