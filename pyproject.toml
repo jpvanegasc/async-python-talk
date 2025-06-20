@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Async Python talk"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "marimo>=0.14.0",
+]
 
 [dependency-groups]
 dev = [
