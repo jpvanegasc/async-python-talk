@@ -37,7 +37,7 @@ class MinimalEventLoop:
         self.next = []
 
     def run_almost_forever(self):
-        while self.ready and self.next:
+        while self.ready or self.next:
             for callback, args in self.ready:
                 callback(*args)
             self.ready = self.next
