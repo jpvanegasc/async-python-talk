@@ -37,6 +37,7 @@ class MinimalEventLoop:
                 callback(*args)
             self.ready = self.next
             self.next = []
+        print("Done")
 
     def schedule(self, callback, *args):
         self.next.append((callback, args))
@@ -44,11 +45,14 @@ class MinimalEventLoop:
 
 @app.cell
 def _():
+    loop = MinimalEventLoop()
+
     def run_eventually(i):
         print(f"Running {i}!")
+        if i % 2 == 0:
+            loop.schedule(run_eventually, i - 1)
         return spam(1)
 
-    loop = MinimalEventLoop()
     loop.schedule(run_eventually, 1)
     loop.schedule(run_eventually, 2)
     loop.run_almost_forever()
@@ -68,14 +72,14 @@ def _():
 
 @app.cell
 async def _():
-    async def _not_actually_a_coroutine(max_val):
+    async def _shouldnt_be_a_coroutine(max_val):
         sum = 0
         for i in range(max_val):
             sum += 0.1 * i
         return sum
 
     async def all_the_bad_things():
-        sum_result = await _not_actually_a_coroutine(2**10)
+        sum_result = await _shouldnt_be_a_coroutine(2**10)
         blocking_result = spam(1)  # async_spam is available!
 
         result_1 = await async_spam(0.5)
@@ -226,6 +230,10 @@ def _():
 
     async def gather():
         results = await asyncio.gather(*[get_data(), get_size()])
+        # Yes, this particular example could be done with
+        # data, size = await asyncio.gather(get_data(), get_size())
+        # It's not the point of this example
+
         # Not very readable or idiomatic. Imagine needing to modify or format separately
         print(f"data={results[0]}, size={results[1]}")
 
