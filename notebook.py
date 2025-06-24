@@ -10,9 +10,6 @@ with app.setup:
     import httpx
     import marimo as mo
 
-
-@app.cell
-def _():
     async def async_spam(sleep_for):
         await asyncio.sleep(sleep_for)
         return sleep_for
@@ -20,8 +17,6 @@ def _():
     def spam(sleep_for):
         time.sleep(sleep_for)
         return sleep_for
-
-    return async_spam, spam
 
 
 @app.cell
@@ -48,7 +43,7 @@ class MinimalEventLoop:
 
 
 @app.cell
-def _(spam):
+def _():
     def run_eventually(i):
         print(f"Running {i}!")
         return spam(1)
@@ -72,7 +67,7 @@ def _():
 
 
 @app.cell
-async def _(async_spam, spam):
+async def _():
     async def _not_actually_a_coroutine(max_val):
         sum = 0
         for i in range(max_val):
@@ -169,7 +164,7 @@ def _():
 
 
 @app.cell
-async def _(async_spam):
+async def _():
     tasks = set()  # for keeping a reference
 
     async def something_i_need_now():
@@ -211,7 +206,7 @@ def _():
 
 
 @app.cell
-def _(async_spam):
+def _():
     async def get_data():
         print("getting data...")
         await async_spam(1)
@@ -276,7 +271,7 @@ def _():
 
 
 @app.cell
-async def _(async_spam):
+async def _():
     def _not_actually_a_coroutine(max_val):
         sum = 0
         for i in range(max_val):
@@ -323,7 +318,7 @@ def _():
 
 
 @app.cell
-def _(async_spam):
+def _():
     class MyCoolService:
         max_size = 10
 
