@@ -112,8 +112,7 @@ def _(GeneratorEventLoop):
         print("started")
         for i in range(max):
             print(f"doing stuff before {i=}")
-            time.sleep(0.5)
-            yield i
+            yield i * spam(1)
         print("one more yield")
         yield
         print("done")
@@ -272,6 +271,42 @@ async def _():
 
 @app.cell
 def _():
+    mo.md(r"""### Careful with garbage collection""")
+    return
+
+
+@app.cell
+async def _():
+    async def _garbage_collection():
+        import gc
+
+        async def example_coroutine(name, sleep_for):
+            print(f"{name} started")
+            try:
+                await async_spam(sleep_for)
+            except asyncio.CancelledError:
+                print(f"{name} was cancelled")
+            finally:
+                print(f"{name} finished")
+
+        asyncio.gather(example_coroutine("Coroutine 1", 1))
+        asyncio.create_task(example_coroutine("Coroutine 2", 1))
+        asyncio.gather(example_coroutine("Coroutine 3", 10))
+        asyncio.create_task(example_coroutine("Coroutine 4", 10))
+
+        gc.collect()
+
+        await asyncio.sleep(3)
+
+        print("Finished")
+
+    await _garbage_collection()
+
+    return
+
+
+@app.cell
+def _():
     mo.md(r"""## Using `asyncio.TaskGroup`""")
     return
 
@@ -295,17 +330,7 @@ def _():
         size = await get_size()
         print(f"{data=}, {size=}")
 
-    async def gather():
-        results = await asyncio.gather(*[get_data(), get_size()])
-        # Yes, this particular example could be done with
-        # data, size = await asyncio.gather(get_data(), get_size())
-        # It's not the point of this example
-
-        # Not very readable or idiomatic. Imagine needing to modify or format separately
-        print(f"data={results[0]}, size={results[1]}")
-
     async def task_group():
-        # Now this is nice
         async with asyncio.TaskGroup() as tg:
             t1 = tg.create_task(get_data())
             t2 = tg.create_task(get_size())
@@ -315,7 +340,7 @@ def _():
 
         print(f"{data=}, {size=}")
 
-    return bad_awaits, gather, task_group
+    return bad_awaits, task_group
 
 
 @app.cell
@@ -326,15 +351,8 @@ async def _(bad_awaits):
 
 
 @app.cell
-async def _(gather):
-    # I bet *this* is what you expect from async code :)
-    await gather()
-    return
-
-
-@app.cell
 async def _(task_group):
-    # Same async, nicer and more manageable
+    # Async, more manageable, without the garbage collection risk
     await task_group()
     return
 
