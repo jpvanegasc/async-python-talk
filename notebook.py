@@ -63,6 +63,73 @@ def _():
 def _():
     mo.md(
         r"""
+    ## Now with generators
+    Check out
+    [this cool article](https://dev.indooroutdoor.io/asyncio-demystified-rebuilding-it-from-scratch-one-yield-at-a-time)
+    to go deeper into this topic.
+    """
+    )
+    return
+
+
+@app.cell
+def _():
+    class Task:
+        def __init__(self, coro):
+            self._coro = coro
+            self.value = None
+
+        def run(self):
+            return self._coro.send(self.value)
+
+    class GeneratorEventLoop:
+        def __init__(self):
+            self.ready = []
+            self.next = []
+
+        def run_almost_forever(self):
+            while self.ready or self.next:
+                for task in self.ready:
+                    try:
+                        task.run()
+                        self.next.append(task)
+                    except StopIteration as stop:
+                        task.value = stop.value
+                self.ready = self.next
+                self.next = []
+
+        def schedule(self, coro):
+            task = Task(coro)
+            self.next.append(task)
+            return task
+
+    return (GeneratorEventLoop,)
+
+
+@app.cell
+def _(GeneratorEventLoop):
+    def _almost_a_coroutine(max):
+        print("started")
+        for i in range(max):
+            print(f"doing stuff before {i=}")
+            time.sleep(0.5)
+            yield i
+        print("one more yield")
+        yield
+        print("done")
+        return max
+
+    gen_loop = GeneratorEventLoop()
+    t = gen_loop.schedule(_almost_a_coroutine(3))
+    gen_loop.run_almost_forever()
+    print(f"{t.value=}")
+    return
+
+
+@app.cell
+def _():
+    mo.md(
+        r"""
     # The right tools
     ## Common async code smells
     """
