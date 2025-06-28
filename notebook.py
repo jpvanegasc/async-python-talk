@@ -19,7 +19,7 @@ with app.setup:
         return sleep_for
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md(r"""# How the event loop works""")
     return
@@ -59,12 +59,12 @@ def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md(
         r"""
     ## Now with generators
-    Check out
+    This is actually pretty close to what the actual event loop does. Check out
     [this cool article](https://dev.indooroutdoor.io/asyncio-demystified-rebuilding-it-from-scratch-one-yield-at-a-time)
     to go deeper into this topic.
     """
@@ -84,6 +84,8 @@ def _():
 
     class GeneratorEventLoop:
         def __init__(self):
+            # Yes I could use deque or something similar, but
+            # because I'm not removing the tasks I'd rather keep it simple
             self.ready = []
             self.next = []
 
@@ -106,13 +108,19 @@ def _():
     return (GeneratorEventLoop,)
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""Let's see how the loop moves through the different "pseudo-awaits":""")
+    return
+
+
 @app.cell
 def _(GeneratorEventLoop):
     def _almost_a_coroutine(max):
         print("started")
         for i in range(max):
             print(f"doing stuff before {i=}")
-            yield i * spam(1)
+            yield i * spam(2)
         print("one more yield")
         yield
         print("done")
@@ -122,15 +130,36 @@ def _(GeneratorEventLoop):
     t = gen_loop.schedule(_almost_a_coroutine(3))
     gen_loop.run_almost_forever()
     print(f"{t.value=}")
+    return (gen_loop,)
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""We get actual async behavior from our loop!""")
     return
 
 
 @app.cell
+def _(gen_loop):
+    def _almost_a_coroutine(id):
+        print(f"Starting {id=}")
+        yield spam(2)
+        print(f"Finished {id=}")
+
+    gen_loop.schedule(_almost_a_coroutine(1))
+    gen_loop.schedule(_almost_a_coroutine(2))
+    gen_loop.schedule(_almost_a_coroutine(3))
+    gen_loop.run_almost_forever()
+    return
+
+
+@app.cell(hide_code=True)
 def _():
     mo.md(
         r"""
     # The right tools
     ## Common async code smells
+    Lets see a badly written coroutine
     """
     )
     return
@@ -166,7 +195,54 @@ async def _():
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""The same thing in pure sync code would look like this:""")
+    return
+
+
 @app.cell
+def _():
+    def _compute_heavy(max_val):
+        sum = 0
+        for i in range(max_val):
+            sum += 0.1 * i
+        return sum
+
+    def pure_sync():
+        sum_result = _compute_heavy(2**10)
+        blocking_result = spam(1)
+
+        result_1 = spam(0.5)
+        result_2 = spam(0.6)
+
+        values = []
+        for i in range(10):
+            value = spam(0.1 * i)
+            values.append(value)
+
+        return sum_result + blocking_result + result_1 + result_2 + sum(values)
+
+    _start = time.time()
+    _result = pure_sync()
+    _end = time.time()
+    print(f"done in {_end - _start:.5f} seconds")
+    print(f"{_result=}")
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(
+        r"""Turns out our pure sync function is the same as the badly written async
+        coroutine, but with a lot more mental gimnastics.
+        Lesson: if you're not writing proper async,
+        better to stick to regular sync Python."""
+    )
+    return
+
+
+@app.cell(hide_code=True)
 def _():
     mo.md(r"""## Using `asyncio.gather`""")
     return
@@ -227,7 +303,7 @@ async def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md(r"""## Using `asyncio.create_task`""")
     return
@@ -269,7 +345,7 @@ async def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md(r"""### Careful with garbage collection""")
     return
@@ -305,7 +381,7 @@ async def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md(r"""## Using `asyncio.TaskGroup`""")
     return
@@ -357,7 +433,7 @@ async def _(task_group):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md(r"""## Fixing the code smells""")
     return
@@ -399,7 +475,7 @@ async def _():
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     mo.md(
         r"""
