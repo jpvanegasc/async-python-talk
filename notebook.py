@@ -234,10 +234,12 @@ def _():
 @app.cell(hide_code=True)
 def _():
     mo.md(
-        r"""Turns out our pure sync function is the same as the badly written async
+        r"""
+    Turns out our pure sync function is the same as the badly written async
         coroutine, but with a lot more mental gimnastics.
         Lesson: if you're not writing proper async,
-        better to stick to regular sync Python."""
+        better to stick to regular sync Python.
+    """
     )
     return
 
@@ -447,17 +449,45 @@ async def _():
             sum += 0.1 * i
         return sum
 
-    async def actually_a_coroutine(max_val):
+    async def _actually_a_coroutine(max_val):
         return await asyncio.gather(*[async_spam(0.1 * i) for i in range(max_val)])
 
-    async def all_the_good_things():
+    async def all_the_good_things_gather():
+        value = _not_actually_a_coroutine(2**10)
+
+        long_result, result_1, result_2, values = await asyncio.gather(
+            async_spam(1), async_spam(0.5), async_spam(0.6), _actually_a_coroutine(10)
+        )
+
+        return value + long_result + result_1 + result_2 + sum(values)
+
+    _start = time.time()
+    _result = await all_the_good_things_gather()
+    _end = time.time()
+    print(f"done in {_end - _start:.5f} seconds")
+    print(f"{_result=}")
+    return
+
+
+@app.cell
+async def _():
+    def _not_actually_a_coroutine(max_val):
+        sum = 0
+        for i in range(max_val):
+            sum += 0.1 * i
+        return sum
+
+    async def _actually_a_coroutine(max_val):
+        return await asyncio.gather(*[async_spam(0.1 * i) for i in range(max_val)])
+
+    async def all_the_good_things_taskgroup():
         value = _not_actually_a_coroutine(2**10)
 
         async with asyncio.TaskGroup() as tg:
             long_result = tg.create_task(async_spam(1))
             result_1 = tg.create_task(async_spam(0.5))
             result_2 = tg.create_task(async_spam(0.6))
-            values = tg.create_task(actually_a_coroutine(10))
+            values = tg.create_task(_actually_a_coroutine(10))
 
         return (
             value
@@ -468,7 +498,7 @@ async def _():
         )
 
     _start = time.time()
-    _result = await all_the_good_things()
+    _result = await all_the_good_things_taskgroup()
     _end = time.time()
     print(f"done in {_end - _start:.5f} seconds")
     print(f"{_result=}")
