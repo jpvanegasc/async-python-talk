@@ -155,6 +155,28 @@ def _(gen_loop):
 
 @app.cell(hide_code=True)
 def _():
+    mo.md(r"""# The problem with `await`""")
+    return
+
+
+@app.cell
+async def _():
+    async def eggs(id):
+        print(f"starting {id=}")
+        await async_spam(2)
+        print(f"finished {id=}")
+
+    async def _run():
+        await eggs(1)
+        await eggs(2)
+        await eggs(3)
+
+    await _run()
+    return
+
+
+@app.cell(hide_code=True)
+def _():
     mo.md(
         r"""
     # The right tools
@@ -251,7 +273,7 @@ def _():
 
 
 @app.cell
-def _():
+async def _():
     async def bad_loop():
         for _ in range(100):
             await asyncio.sleep(0.1)
@@ -260,24 +282,15 @@ def _():
         tasks = [asyncio.sleep(0.1) for i in range(100)]
         await asyncio.gather(*tasks)
 
-    return bad_loop, good_gather
-
-
-@app.cell
-async def _(bad_loop):
     _start = time.time()
     await bad_loop()
     _end = time.time()
-    print(f"done in {_end - _start:.5f} seconds")
-    return
+    print(f"bad done in {_end - _start:.5f} seconds")
 
-
-@app.cell
-async def _(good_gather):
     _start = time.time()
     await good_gather()
     _end = time.time()
-    print(f"done in {_end - _start:.5f} seconds")
+    print(f"good done in {_end - _start:.5f} seconds")
     return
 
 
@@ -320,9 +333,9 @@ async def _():
         print("here you go")
 
     async def something_that_can_run_later():
-        print("starting")
+        print("starting later")
         await async_spam(1)
-        print("Did the thing!")
+        print("did the thing!")
         return 0
 
     def mark_done(task):
