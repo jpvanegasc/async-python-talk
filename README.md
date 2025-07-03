@@ -15,7 +15,8 @@ which will install [marimo](https://marimo.io/) and open the notebook in your br
 Make sure you have [uv](https://docs.astral.sh/uv/) installed!
 
 ### Slides
-WIP
+
+You can find the slides used during the presentation at [slides.pdf](slides.pdf).
 
 ### References
 > If I have seen further than others, it is by standing upon the shoulders of giants.
