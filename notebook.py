@@ -554,6 +554,8 @@ def _():
 
 @app.cell
 async def _(service):
+    service.current_services.clear()
+
     async def unsafe(id):
         return await service.my_slow_action(id)
 
@@ -562,13 +564,13 @@ async def _(service):
     except RuntimeError as e:
         print(repr(e))
         print("told you!")
-
-    service.current_services.clear()
     return
 
 
 @app.cell
 async def _(service):
+    service.current_services.clear()
+
     semaphore = asyncio.Semaphore(8)  # less than what the service handles :)
 
     async def safe(id):
